@@ -1,0 +1,118 @@
+#include <Servo.h>
+
+// === Motor Pins ===
+const int EN1 = 11;   // Enable for Motors 1 & 2
+const int IN1 = 10;   // Motor 1 control
+const int IN2 = 9;    // Motor 2 control
+
+const int EN2 = 5;    // Enable for Motors 3 & 4
+const int IN3 = 4;    // Motor 3 control
+const int IN4 = 3;    // Motor 4 control
+
+// === Ultrasonic Pins ===
+const int trigPin = 13;
+const int echoPin = 12;
+
+// === Servo ===
+const int servoPin = 6;
+Servo myServo;
+
+// === Distance Threshold ===
+const int obstacleThreshold = 10; // cm
+
+void setup() {
+  // Setup Motor Pins
+  pinMode(EN1, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(EN2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+
+  // Setup Ultrasonic
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  // Setup Servo
+  myServo.attach(servoPin);
+
+  // Start Serial Monitor
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Measure Distance
+  int distance = getDistance();
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  if (distance <= obstacleThreshold) {
+    stopMotors();
+    reactWithServo();
+  } else {
+    moveMotorsForward();
+    delay(3000);
+    moveMotorsBackward();
+    delay(3000);
+    stopMotors();
+  }
+
+  delay(1000); // small pause
+}
+
+// ========== Functions ==========
+
+void moveMotorsForward() {
+  // M1 & M2 Forward
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(EN1, HIGH);
+
+  // M3 & M4 Forward
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  digitalWrite(EN2, HIGH);
+}
+
+void moveMotorsBackward() {
+  // M1 & M2 Backward
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(EN1, HIGH);
+
+  // M3 & M4 Backward
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  digitalWrite(EN2, HIGH);
+}
+
+void stopMotors() {
+  digitalWrite(EN1, LOW);
+  digitalWrite(EN2, LOW);
+}
+
+void reactWithServo() {
+  for (int i = 0; i < 3; i++) {
+    myServo.write(0);
+    delay(500);
+    myServo.write(90);
+    delay(500);
+    myServo.write(180);
+    delay(500);
+  }
+  myServo.write(90); // reset to center
+}
+
+int getDistance() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  long duration = pulseIn(echoPin, HIGH);
+  int distance = duration * 0.034 / 2; // Convert to cm
+  return distance;
+}
