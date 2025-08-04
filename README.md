@@ -1,4 +1,4 @@
-#  Robot Motor Control System
+#  Motor Control System
 
 A fully functional Arduino-based motor control system combining four DC motors, a servo motor, and an ultrasonic sensor for obstacle detection and reactive movement. Designed using the L293D motor driver and tested in TinkerCAD Circuits.
 
